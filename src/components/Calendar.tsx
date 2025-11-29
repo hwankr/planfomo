@@ -46,19 +46,31 @@ export default function Calendar({ selectedDate, onSelectDate }: CalendarProps) 
         <h2 className="text-lg font-bold text-gray-900 dark:text-white">
           {format(currentMonth, 'MMMM yyyy')}
         </h2>
-        <div className="flex gap-1">
+        <div className="flex items-center gap-2">
           <button
-            onClick={prevMonth}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+            onClick={() => {
+              const today = new Date();
+              setCurrentMonth(today);
+              onSelectDate(today);
+            }}
+            className="text-xs font-medium px-2 py-1 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
           >
-            <ChevronLeft className="w-5 h-5 text-gray-500" />
+            Today
           </button>
-          <button
-            onClick={nextMonth}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-          >
-            <ChevronRight className="w-5 h-5 text-gray-500" />
-          </button>
+          <div className="flex gap-1">
+            <button
+              onClick={prevMonth}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5 text-gray-500" />
+            </button>
+            <button
+              onClick={nextMonth}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+            >
+              <ChevronRight className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
         </div>
       </div>
 
