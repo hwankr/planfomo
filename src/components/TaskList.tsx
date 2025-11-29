@@ -11,7 +11,16 @@ interface Task {
   title: string;
   status: 'todo' | 'in_progress' | 'done';
   estimated_pomodoros: number;
+  duration?: number; // ✨ [New] Display duration
 }
+
+const formatDuration = (seconds: number) => {
+  if (!seconds) return null;
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+};
 
 interface TaskListProps {
   selectedDate: Date;
@@ -41,10 +50,24 @@ export default function TaskList({ selectedDate, userId }: TaskListProps) {
       .eq('due_date', dateStr)
       .order('created_at', { ascending: true });
 
+    // ✨ [New] Fetch study sessions for the selected date
+    const { data: sessions } = await supabase
+      .from('study_sessions')
+      .select('task_id, duration')
+      .eq('user_id', userId)
+      .gte('created_at', `${dateStr}T00:00:00`)
+      .lte('created_at', `${dateStr}T23:59:59`);
+
     if (error) {
       console.error('Error fetching tasks:', error);
     } else {
-      setTasks(data || []);
+      // ✨ [New] Merge duration into tasks
+      const tasksWithDuration = (data || []).map((task: any) => {
+        const taskSessions = sessions?.filter((s: any) => s.task_id === task.id) || [];
+        const totalDuration = taskSessions.reduce((acc: number, curr: any) => acc + curr.duration, 0);
+        return { ...task, duration: totalDuration };
+      });
+      setTasks(tasksWithDuration);
     }
     setLoading(false);
   }, [selectedDate, userId]);
@@ -157,6 +180,13 @@ export default function TaskList({ selectedDate, userId }: TaskListProps) {
               )}>
                 {task.title}
               </span>
+
+              {/* ✨ [New] Display Duration */}
+              {task.duration ? (
+                <span className="text-xs font-bold text-rose-500 bg-rose-50 dark:bg-rose-900/30 px-2 py-1 rounded-md whitespace-nowrap">
+                  {formatDuration(task.duration)}
+                </span>
+              ) : null}
 
               <button
                 onClick={() => deleteTask(task.id)}
