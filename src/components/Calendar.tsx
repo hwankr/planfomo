@@ -99,6 +99,8 @@ export default function Calendar({ selectedDate, onSelectDate }: CalendarProps) 
                 'aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all duration-200',
                 !isCurrentMonth && 'text-gray-300 dark:text-gray-600',
                 isCurrentMonth && 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50',
+                isCurrentMonth && !isSelected && day.getDay() === 0 && 'text-red-400 dark:text-red-400',
+                isCurrentMonth && !isSelected && day.getDay() === 6 && 'text-blue-400 dark:text-blue-400',
                 isSelected && 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100 shadow-md scale-105 z-10',
                 isDayToday && !isSelected && 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400 font-bold'
               )}
