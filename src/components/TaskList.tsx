@@ -50,17 +50,17 @@ export default function TaskList({ selectedDate, userId }: TaskListProps) {
       .eq('due_date', dateStr)
       .order('created_at', { ascending: true });
 
-    // ✨ [New] Fetch study sessions for the selected date
-    const { data: sessions } = await supabase
-      .from('study_sessions')
-      .select('task_id, duration')
-      .eq('user_id', userId)
-      .gte('created_at', `${dateStr}T00:00:00`)
-      .lte('created_at', `${dateStr}T23:59:59`);
-
     if (error) {
       console.error('Error fetching tasks:', error);
     } else {
+      const taskIds = (data || []).map((t: any) => t.id);
+      
+      // ✨ [New] Fetch ALL study sessions for these tasks to calculate total duration
+      const { data: sessions } = await supabase
+        .from('study_sessions')
+        .select('task_id, duration')
+        .in('task_id', taskIds);
+
       // ✨ [New] Merge duration into tasks
       const tasksWithDuration = (data || []).map((task: any) => {
         const taskSessions = sessions?.filter((s: any) => s.task_id === task.id) || [];
@@ -74,6 +74,26 @@ export default function TaskList({ selectedDate, userId }: TaskListProps) {
 
   useEffect(() => {
     fetchTasks();
+
+    // ✨ [New] Real-time subscription for study sessions
+    const channel = supabase
+      .channel('task-list-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'study_sessions',
+        },
+        () => {
+          fetchTasks();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [fetchTasks]);
 
   const addTask = async (e: React.FormEvent) => {

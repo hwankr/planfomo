@@ -32,7 +32,7 @@ export default function Dashboard({ session }: DashboardProps) {
         .lte('created_at', end.toISOString());
 
       if (data) {
-        const total = data.reduce((acc, curr) => acc + curr.duration, 0);
+        const total = data.reduce((acc: number, curr: { duration: number }) => acc + curr.duration, 0);
         setFocusTime(total);
       } else {
         setFocusTime(0);
@@ -40,6 +40,26 @@ export default function Dashboard({ session }: DashboardProps) {
     };
 
     fetchFocusTime();
+    
+    // ✨ [New] Real-time subscription
+    const channel = supabase
+      .channel('dashboard-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'study_sessions',
+        },
+        () => {
+          fetchFocusTime();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [selectedDate, session]);
 
   const formatDuration = (seconds: number) => {
