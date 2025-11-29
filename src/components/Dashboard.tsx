@@ -5,6 +5,7 @@ import { Session } from '@supabase/supabase-js';
 import { format } from 'date-fns';
 import Calendar from './Calendar';
 import TaskList from './TaskList';
+import Timeline from './Timeline';
 import { supabase } from '@/lib/supabase';
 
 interface DashboardProps {
@@ -121,6 +122,9 @@ export default function Dashboard({ session }: DashboardProps) {
                 on {format(selectedDate, 'MMM d')}.
               </p>
             </div>
+            
+            {/* Timeline */}
+            <Timeline selectedDate={selectedDate} userId={session?.user?.id || ''} />
           </div>
 
           {/* Right Column: Tasks */}
