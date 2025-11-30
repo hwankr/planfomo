@@ -93,7 +93,12 @@ export default function Dashboard({ session }: DashboardProps) {
             </button>
           ) : (
             <button
-              onClick={() => supabase.auth.signInWithOAuth({ provider: 'google' })}
+              onClick={() => supabase.auth.signInWithOAuth({ 
+                provider: 'google',
+                options: {
+                  redirectTo: window.location.origin,
+                },
+              })}
               className="text-sm text-rose-500 hover:text-rose-600 font-medium transition-colors"
             >
               Log in
